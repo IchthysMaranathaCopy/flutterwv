@@ -151,9 +151,22 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: null,
-      body: WebViewWidget(controller: _controller),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+        
+        final canGoBack = await _controller.canGoBack();
+        if (canGoBack) {
+          _controller.goBack();
+        } else {
+          if (mounted) Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: null,
+        body: WebViewWidget(controller: _controller),
+      ),
     );
   }
 }
