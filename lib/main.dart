@@ -7,7 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:open_file_plus/open_file_plus.dart';
+import 'package:open_filex/open_filex.dart';
 
 // Replace with your server endpoint
 const String TOKEN_ENDPOINT = 'https://your-server.com/store-token';
@@ -117,7 +117,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         final file = File('${directory?.path}/$filename');
         
         await file.writeAsBytes(response.bodyBytes);
-        OpenFile.open(file.path);
+        OpenFilex.open(file.path);
       }
     } catch (e) {
       _showError('Download failed: $e');
