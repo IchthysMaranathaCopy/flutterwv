@@ -7,21 +7,18 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:open_filex/open_filex.dart';
-
-// Replace with your server endpoint
-const String TOKEN_ENDPOINT = 'https://your-server.com/store-token';
-const String INITIAL_URL = 'https://your-website.com';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Background message: ${message.messageId}");
+  print('Handling a background message ${message.messageId}');
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(const MyApp());
 }
 
@@ -31,141 +28,177 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lawffice',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const WebViewScreen(),
+      title: 'WebView App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
     );
   }
 }
 
-class WebViewScreen extends StatefulWidget {
-  const WebViewScreen({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  State<WebViewScreen> createState() => _WebViewScreenState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController _controller;
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  bool _isLoading = true;
+class _MyHomePageState extends State<MyHomePage> {
+  late WebViewController _controller;
+  final Completer<WebViewController> _controllerCompleter =
+      Completer<WebViewController>();
+  String initialUrl = 'https://sanju.maplein.com'; // Replace with your URL
+  String fcmTokenUrl = 'https://sanju.maplein.com/api/webhooks/trigger/app_d1e8203afd9c431890d2ed6e03847a3c/wh_604c016ca4d44fdf98c5d42d518f1a27'; // Replace with your FCM token upload URL
 
   @override
   void initState() {
     super.initState();
-    _initWebView();
     _setupFirebase();
-    _requestPermissions();
+    if (Platform.isAndroid) WebView.platform = AndroidWebView();
   }
 
-  void _initWebView() {
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (int progress) => setState(() => _isLoading = progress < 100),
-        onPageStarted: (String url) => setState(() => _isLoading = true),
-        onPageFinished: (String url) => setState(() => _isLoading = false),
-        onWebResourceError: (WebResourceError error) => _showError(error.description),
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.contains('download')) {
-            _handleDownload(request.url);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ))
-      ..loadRequest(Uri.parse('https://sanju.maplein.com'))
-      ..enableZoom(true)
-      ..setBackgroundColor(Colors.white);
-  }
+  Future<void> _setupFirebase() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  void _setupFirebase() async {
-    await _fcm.setAutoInitEnabled(true);
-    NotificationSettings settings = await _fcm.requestPermission();
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      String? token = await _fcm.getToken();
-      if (token != null) _sendTokenToServer(token);
+      print('User granted permission!');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
     }
 
+    FirebaseMessaging.instance.getToken().then((token) {
+      _sendFcmToken(token);
+    });
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      _sendFcmToken(token);
+    });
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
       if (message.notification != null) {
-        _showNotification(message.notification!);
+        print('Message also contained a notification: ${message.notification}');
       }
     });
   }
 
-  Future<void> _sendTokenToServer(String token) async {
+  Future<void> _sendFcmToken(String? token) async {
+    if (token == null) return;
     try {
       final response = await http.post(
-        Uri.parse('https://sanju.maplein.com/api/webhooks/trigger/app_d1e8203afd9c431890d2ed6e03847a3c/wh_604c016ca4d44fdf98c5d42d518f1a27'),
+        Uri.parse(fcmTokenUrl),
         body: {'token': token},
       );
-      print('Token sent successfully: ${response.statusCode}');
-    } catch (e) {
-      print('Error sending token: $e');
-      // Implement retry logic here if needed
-    }
-  }
-
-  Future<void> _handleDownload(String url) async {
-    try {
-      final status = await Permission.storage.request();
-      if (status.isGranted) {
-        final filename = url.split('/').last;
-        final response = await http.get(Uri.parse(url));
-        final directory = await getDownloadsDirectory();
-        final file = File('${directory?.path}/$filename');
-        
-        await file.writeAsBytes(response.bodyBytes);
-        OpenFilex.open(file.path);
+      if (response.statusCode == 200) {
+        print('FCM token sent successfully');
+      } else {
+        print('Failed to send FCM token: ${response.statusCode}');
       }
     } catch (e) {
-      _showError('Download failed: $e');
+      print('Error sending FCM token: $e');
     }
-  }
-
-  Future<void> _requestPermissions() async {
-    await [
-      Permission.storage,
-      Permission.camera,
-      Permission.microphone,
-    ].request();
-  }
-
-  void _showNotification(RemoteNotification notification) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(notification.title ?? 'Notification'),
-        content: Text(notification.body ?? ''),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
-      ),
-    );
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (bool didPop) async {
-        if (didPop) return;
-        
-        final canGoBack = await _controller.canGoBack();
-        if (canGoBack) {
+    return WillPopScope(
+      onWillPop: () async {
+        if (await _controller.canGoBack()) {
           _controller.goBack();
-        } else {
-          if (mounted) Navigator.of(context).pop();
+          return false;
         }
+        return true;
       },
       child: Scaffold(
-        appBar: null,
-        body: WebViewWidget(controller: _controller),
+        body: SafeArea(
+          child: WebView(
+            initialUrl: initialUrl,
+            javascriptMode: JavascriptMode.unrestricted,
+            onWebViewCreated: (WebViewController webViewController) {
+              _controllerCompleter.complete(webViewController);
+              _controller = webViewController;
+            },
+            navigationDelegate: (NavigationRequest request) async {
+
+              if (request.url.startsWith('http') || request.url.startsWith('https')) {
+                return NavigationDecision.navigate;
+              }else if(request.url.startsWith('mailto:') || request.url.startsWith('tel:')){
+                if (await canLaunchUrl(Uri.parse(request.url))) {
+                  await launchUrl(Uri.parse(request.url));
+                  return NavigationDecision.prevent;
+                } else {
+                  return NavigationDecision.prevent;
+                }
+              }
+
+              return NavigationDecision.navigate;
+            },
+
+            javascriptChannels: <JavascriptChannel>{
+              JavascriptChannel(
+                name: 'DownloadChannel',
+                onMessageReceived: (JavascriptMessage message) async {
+                  final url = message.message;
+                  await _downloadFile(url);
+                },
+              ),
+            },
+            onPageFinished: (String url) {
+              // You can add logic here if needed
+            },
+            onWebResourceError: (WebResourceError error) {
+              print("Web resource error: ${error.description}");
+            },
+            gestureNavigationEnabled: true,
+            allowsInlineMediaPlayback: true,
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> _downloadFile(String url) async {
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isGranted) {
+        final httpClient = http.Client();
+        final request = await httpClient.get(Uri.parse(url));
+        final bytes = request.bodyBytes;
+
+        final filename = url.split('/').last;
+        final directory = await getExternalStorageDirectory();
+        final file = File('${directory?.path}/$filename');
+        await file.writeAsBytes(bytes);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Downloaded $filename to ${directory?.path}')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Storage permission denied')),
+        );
+      }
+    } else {
+      // Implement for iOS if needed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download not supported on iOS')),
+      );
+    }
   }
 }
