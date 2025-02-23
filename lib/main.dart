@@ -59,16 +59,20 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   void _initWebView() {
-    _controller = WebViewController()
-  ..setJavaScriptMode(JavaScriptMode.unrestricted)
-  ..setBackgroundColor(const Color(0x00000000))
-  ..setNavigationDelegate(navigationDelegate)
-  ..enableZoom(true)
-  ..setPlatformNavigationDelegate(PlatformNavigationDelegate(
-    android: AndroidNavigationDelegate(
-      enableHybridComposition: true, // Important for file upload
-    ),
-  ))
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (int progress) => setState(() => _isLoading = progress < 100),
+        onPageStarted: (String url) => setState(() => _isLoading = true),
+        onPageFinished: (String url) => setState(() => _isLoading = false),
+        onWebResourceError: (WebResourceError error) => _showError(error.description),
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.contains('download')) {
+            _handleDownload(request.url);
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
+      ))
       ..loadRequest(Uri.parse('https://sanju.maplein.com'))
       ..enableZoom(true)
       ..setBackgroundColor(Colors.white);
