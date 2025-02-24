@@ -3,8 +3,7 @@ dependencies:
     sdk: flutter
   webview_flutter: ^4.2.2 # Check for the latest version
   firebase_core: ^2.15.0 # Check for the latest version
-  firebase_
-  http: ^0.13.0 # Check for the latest version
+  firebase_http: ^0.13.0 # Check for the latest version
   path_provider: ^2.0.0 # Check for the latest version
   permission_handler: ^10.0.0 # Check for the latest version
   url_launcher: ^6.1.11 # Check for the latest version
