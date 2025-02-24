@@ -3,7 +3,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
-import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 
 
 void main() async {
@@ -61,6 +60,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   void _setupFirebase() async {
+    await _firebaseMessaging.subscribeToTopic('allusers');
     await _firebaseMessaging.setAutoInitEnabled(true);
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -72,6 +72,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       sound: true,
     );
         if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+          
       String? token = await _firebaseMessaging.getToken();
       if (token != null) _sendTokenToServer(token);
     }
