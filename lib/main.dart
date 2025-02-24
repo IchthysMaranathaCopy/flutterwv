@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'WebView App',
+      title: 'Lawffice',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
