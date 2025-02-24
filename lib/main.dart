@@ -48,6 +48,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent("random")
       ..loadRequest(Uri.parse('https://sanju.maplein.com')) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
