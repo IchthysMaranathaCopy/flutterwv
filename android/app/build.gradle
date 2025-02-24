@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.webviewapp' // Replace with your package name
+    namespace 'com.maple.lawffice' // Replace with your package name
     compileSdk 33 // Or your target SDK
 
     defaultConfig {
-        applicationId "com.example.webviewapp" // Replace with your package name
+        applicationId "com.maple.lawffice" // Replace with your package name
         minSdk 21 // Or your minimum SDK
         targetSdk 33 // Or your target SDK
         versionCode 1
