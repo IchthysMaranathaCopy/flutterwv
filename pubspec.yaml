@@ -1,26 +1,15 @@
-name: Lawffice
-description: A WebView app with Firebase Notifications
-
-version: 1.0.0+1
-
-environment:
-  sdk: "^3.6.0"
-
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter: ^4.4.0
-  firebase_messaging: ^14.7.0
-  firebase_core: ^2.15.0
-  http: ^1.1.0
-  path_provider: ^2.1.1
-  permission_handler: ^10.3.0
-  open_filex: ^4.6.0
-  url_launcher: ^6.3.1
+  webview_flutter: ^4.2.2 # Check for the latest version
+  firebase_core: ^2.15.0 # Check for the latest version
+  firebase_
+  http: ^0.13.0 # Check for the latest version
+  path_provider: ^2.0.0 # Check for the latest version
+  permission_handler: ^10.0.0 # Check for the latest version
+  url_launcher: ^6.1.11 # Check for the latest version
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-flutter:
-  uses-material-design: true
+  flutter_lints: ^2.0.0
