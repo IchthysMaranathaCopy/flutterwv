@@ -12,6 +12,7 @@ dependencies:
   webview_flutter: ^4.4.0
   firebase_messaging: ^14.7.0
   firebase_core: ^2.15.0
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
