@@ -1,24 +1,19 @@
-// app/build.gradle
-
 plugins {
     id 'com.android.application'
     id "dev.flutter.flutter-gradle-plugin"
-    id 'org.jetbrains.kotlin.android'
-    id 'com.google.gms.google-services' // Add this line for Firebase
+    id 'kotlin-android'
+    id 'com.google.gms.google-services'
 }
 
 android {
-    namespace 'com.maple.lawffice' // Replace with your package name
-    compileSdk 33 // Or your target SDK
+    compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.maple.lawffice" // Replace with your package name
-        minSdk 21 // Or your minimum SDK
-        targetSdk 33 // Or your target SDK
+        applicationId "com.example.flutter_webview_fcm"
+        minSdkVersion 21
+        targetSdkVersion 33
         versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        versionName "1.0.0"
     }
 
     buildTypes {
@@ -27,25 +22,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
 }
 
 dependencies {
-
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation platform('com.google.firebase:firebase-bom:32.2.0') // Or the latest BOM
-    implementation 'com.google.firebase:firebase-messaging-ktx'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-     implementation("com.squareup.okhttp3:okhttp:4.11.0") 
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.firebase:firebase-messaging:23.1.2'
 }
+
