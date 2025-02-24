@@ -1,14 +1,19 @@
+// android/build.gradle
+
 buildscript {
-
+    ext.kotlin_version = '1.7.10' // Or the latest Kotlin version
     repositories {
-      google()  // Google's Maven repository
-      mavenCentral()
+        google()
+        mavenCentral()
     }
-    dependencies {
 
-        classpath 'com.google.gms:google-services:4.3.15'
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0' // Or the latest Gradle version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.15' // Add this line for Firebase
     }
 }
+
 allprojects {
     repositories {
         google()
@@ -16,18 +21,10 @@ allprojects {
     }
 }
 
-
-rootProject.buildDir = "../build"
+rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-}
-
-tasks.register("clean", Delete) {
+task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-
-
