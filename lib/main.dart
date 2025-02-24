@@ -116,7 +116,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-return PopScope(
+return SafeArea(
+     child: PopScope(
       canPop: false,
       onPopInvoked: (bool didPop) async {
         if (didPop) return;
@@ -132,6 +133,7 @@ return PopScope(
       appBar: null,
       body: WebViewWidget(controller: _controller),
         ),
+       ),
     );
   }
 }
