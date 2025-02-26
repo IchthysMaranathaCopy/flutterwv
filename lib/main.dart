@@ -42,6 +42,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _downloadFilename;
+  String? _pendingDownloadUrl;
 
   @override
   void initState() {
