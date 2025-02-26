@@ -56,7 +56,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel('DownloadHandler', 
+      ..addJavaScriptChannel('DownloadInterceptor', 
       onMessageReceived: (message) {
         final data = jsonDecode(message.message);
         _handleFileDownload(data['url'], filename: data['filename']);
