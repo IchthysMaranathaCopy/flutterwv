@@ -3,6 +3,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:open_filex/open_filex.dart';
 
 
 void main() async {
@@ -42,6 +45,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     super.initState();
     _initWebView();
     _setupFirebase();
+    _requestPermissions();
   }
 
   void _initWebView() {
@@ -55,6 +59,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
           onPageStarted: (String url) {},
           onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+          if (request.url.contains('download')) {
+            _handleDownload(request.url);
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
         ),
       );
   }
@@ -76,6 +87,30 @@ class _WebViewScreenState extends State<WebViewScreen> {
       String? token = await _firebaseMessaging.getToken();
       if (token != null) _sendTokenToServer(token);
     }
+    Future<void> _handleDownload(String url) async {
+    try {
+      final status = await Permission.storage.request();
+      if (status.isGranted) {
+        final filename = url.split('/').last;
+        final response = await http.get(Uri.parse(url));
+        final directory = await getDownloadsDirectory();
+        final file = File('${directory?.path}/$filename');
+        
+        await file.writeAsBytes(response.bodyBytes);
+        OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      _showError('Download failed: $e');
+    }
+  }
+
+  Future<void> _requestPermissions() async {
+    await [
+      Permission.storage,
+      Permission.camera,
+      Permission.microphone,
+    ].request();
+  }
 
     print('Permission granted: ${settings.authorizationStatus}');
 
