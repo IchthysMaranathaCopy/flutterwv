@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
+import 'dart:async';
+import 'dart:io';
 
 
 void main() async {
@@ -137,6 +139,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
       Permission.camera,
       Permission.microphone,
     ].request();
+  }
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
     Future<void> _sendTokenToServer(String token) async {
     try {
