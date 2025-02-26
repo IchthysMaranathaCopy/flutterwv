@@ -141,7 +141,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       if (status.isGranted) {
         final filename = _downloadFilename ?? url.split('/').last;
         final response = await http.get(Uri.parse(url));
-        final directory = await getDownloadsDirectory();
+        final directory = Directory('/storage/emulated/0/Download');
         final file = File('${directory?.path}/$filename');
         
         await file.writeAsBytes(response.bodyBytes);
