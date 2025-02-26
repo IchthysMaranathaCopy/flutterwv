@@ -69,7 +69,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-          if (request.url.contains('download')) {
+          if (request.url.contains('prod-budi-app-assets')) {
             _handleDownload(request.url);
             return NavigationDecision.prevent;
           }
