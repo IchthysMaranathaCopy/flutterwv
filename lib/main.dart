@@ -87,30 +87,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
       String? token = await _firebaseMessaging.getToken();
       if (token != null) _sendTokenToServer(token);
     }
-    Future<void> _handleDownload(String url) async {
-    try {
-      final status = await Permission.storage.request();
-      if (status.isGranted) {
-        final filename = url.split('/').last;
-        final response = await http.get(Uri.parse(url));
-        final directory = await getDownloadsDirectory();
-        final file = File('${directory?.path}/$filename');
-        
-        await file.writeAsBytes(response.bodyBytes);
-        OpenFilex.open(file.path);
-      }
-    } catch (e) {
-      _showError('Download failed: $e');
-    }
-  }
-
-  Future<void> _requestPermissions() async {
-    await [
-      Permission.storage,
-      Permission.camera,
-      Permission.microphone,
-    ].request();
-  }
 
     print('Permission granted: ${settings.authorizationStatus}');
 
@@ -137,6 +113,30 @@ class _WebViewScreenState extends State<WebViewScreen> {
       print('Message opened from terminated state:');
       print(message.data);
     });
+  }
+  Future<void> _handleDownload(String url) async {
+    try {
+      final status = await Permission.storage.request();
+      if (status.isGranted) {
+        final filename = url.split('/').last;
+        final response = await http.get(Uri.parse(url));
+        final directory = await getDownloadsDirectory();
+        final file = File('${directory?.path}/$filename');
+        
+        await file.writeAsBytes(response.bodyBytes);
+        OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      _showError('Download failed: $e');
+    }
+  }
+
+  Future<void> _requestPermissions() async {
+    await [
+      Permission.storage,
+      Permission.camera,
+      Permission.microphone,
+    ].request();
   }
     Future<void> _sendTokenToServer(String token) async {
     try {
