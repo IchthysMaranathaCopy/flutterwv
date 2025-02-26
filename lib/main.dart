@@ -41,6 +41,7 @@ class WebViewScreen extends StatefulWidget {
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  String? _downloadFilename;
 
   @override
   void initState() {
@@ -53,13 +54,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel('DownloadHandler', 
+      onMessageReceived: (JavaScriptMessage message) {
+        _downloadFilename = message.message;
+      })
       ..setUserAgent("random")
       ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
           onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
+          onPageFinished: (String url) {
+            _injectDownloadInterceptor();
+          },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
           if (request.url.contains('download')) {
@@ -116,17 +123,30 @@ class _WebViewScreenState extends State<WebViewScreen> {
       print(message.data);
     });
   }
+  void _injectDownloadInterceptor() {
+  _controller.runJavaScript('''
+    document.addEventListener('click', function(e) {
+      const target = e.target.closest('a[download]');
+      if (target) {
+        e.preventDefault();
+        DownloadHandler.postMessage(target.getAttribute('download'));
+        window.open(target.href, '_blank');
+      }
+    });
+  ''');
+}
   Future<void> _handleDownload(String url) async {
     try {
       final status = await Permission.storage.request();
       if (status.isGranted) {
-        final filename = url.split('/').last;
+        final filename = _downloadFilename ?? url.split('/').last;
         final response = await http.get(Uri.parse(url));
         final directory = await getDownloadsDirectory();
         final file = File('${directory?.path}/$filename');
         
         await file.writeAsBytes(response.bodyBytes);
         OpenFilex.open(file.path);
+        _downloadFilename = null;
       }
     } catch (e) {
       _showError('Download failed: $e');
