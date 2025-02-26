@@ -54,7 +54,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setUserAgent("random")
-      ..loadRequest(Uri.parse('https://sanju.maplein.com')) // Replace with your URL
+      ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
