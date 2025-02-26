@@ -130,7 +130,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       if (target) {
         e.preventDefault();
         DownloadHandler.postMessage(target.getAttribute('download'));
-        window.open(target.href, '_blank');
+//        window.open(target.href, '_blank');
       }
     });
   ''');
