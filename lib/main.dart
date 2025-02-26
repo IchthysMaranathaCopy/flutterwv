@@ -55,8 +55,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel('DownloadHandler', 
-      onMessageReceived: (JavaScriptMessage message) {
-        _downloadFilename = message.message;
+      onMessageReceived: (message) {
+        final data = jsonDecode(message.message);
+        _handleFileDownload(data['url'], filename: data['filename']);
       })
       ..setUserAgent("random")
       ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
@@ -69,10 +70,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-          if (request.url.contains('prod-budi-app-assets')) {
-            _handleDownload(request.url);
-            return NavigationDecision.prevent;
-          }
+          if (_pendingDownloadUrl == request.url) {
+          _pendingDownloadUrl = null;
+          return NavigationDecision.prevent;
+        }
           return NavigationDecision.navigate;
         },
         ),
@@ -123,35 +124,56 @@ class _WebViewScreenState extends State<WebViewScreen> {
       print(message.data);
     });
   }
-  void _injectDownloadInterceptor() {
+void _injectDownloadInterceptor() {
   _controller.runJavaScript('''
-    document.addEventListener('click', function(e) {
-      const target = e.target.closest('a[download]');
-      if (target) {
+    (function() {
+      const interceptSelector = 'a[download]';
+      
+      function handleDownloadClick(e) {
+        const link = e.target.closest(interceptSelector);
+        if (!link) return;
+        
         e.preventDefault();
-        DownloadHandler.postMessage(target.getAttribute('download'));
-//        window.open(target.href, '_blank');
+        e.stopImmediatePropagation();
+        
+        DownloadInterceptor.postMessage(JSON.stringify({
+          url: link.href,
+          filename: link.getAttribute('download')
+        }));
+        return false;
       }
-    });
+
+      document.body.addEventListener('click', handleDownloadClick, true);
+      window.addEventListener('beforeunload', () => {
+        document.body.removeEventListener('click', handleDownloadClick, true);
+      });
+    })();
   ''');
 }
-  Future<void> _handleDownload(String url) async {
-    try {
-      final status = await Permission.storage.request();
-      if (status.isGranted) {
-        final filename = _downloadFilename ?? url.split('/').last;
-        final response = await http.get(Uri.parse(url));
-        final directory = Directory('/storage/emulated/0/Download');
-        final file = File('${directory?.path}/$filename');
-        
-        await file.writeAsBytes(response.bodyBytes);
-        OpenFilex.open(file.path);
-        _downloadFilename = null;
-      }
-    } catch (e) {
-      _showError('Download failed: $e');
-    }
+
+  Future<void> _handleFileDownload(String url, {String? filename}) async {
+  try {
+    if (_pendingDownloadUrl == url) return;
+    _pendingDownloadUrl = url;
+    
+    filename ??= 'file';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Downloading $filename...')),
+    );
+
+    final response = await http.get(Uri.parse(url));
+    final directory = Directory('/storage/emulated/0/Download');
+    final file = File('${directory?.path}/$filename');
+    
+    await file.writeAsBytes(response.bodyBytes);
+    _pendingDownloadUrl = null;
+    
+    OpenFilex.open(file.path);
+  } catch (e) {
+    _pendingDownloadUrl = null;
+    _showError('Download failed: $e');
   }
+}
 
   Future<void> _requestPermissions() async {
     await [
