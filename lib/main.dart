@@ -54,12 +54,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     _setupFirebase();
     _requestPermissions();
   }
-  void addFileSelectionListener() async {
-    if (Platform.isAndroid) {
-      final androidController = controller.platform as AndroidWebViewController;
-      await androidController.setOnShowFileSelector(_androidFilePicker);
-    }
-  }
+
 
   void _initWebView() {
     _controller = WebViewController()
@@ -88,6 +83,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
         },
         ),
       );
+  }
+    void addFileSelectionListener() async {
+    if (Platform.isAndroid) {
+      final androidController = _controller.platform as AndroidWebViewController;
+      await androidController.setOnShowFileSelector(_androidFilePicker);
+    }
   }
 
   void _setupFirebase() async {
