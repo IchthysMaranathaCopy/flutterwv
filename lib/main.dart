@@ -83,6 +83,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         },
         ),
       );
+    addFileSelectionListener();
   }
     void addFileSelectionListener() async {
     if (Platform.isAndroid) {
