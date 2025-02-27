@@ -65,7 +65,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         _handleFileDownload(data['url'], filename: data['filename']);
       })
       ..setUserAgent("random")
-      ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
+      ..loadRequest(Uri.parse('https://sanju.maplein.com')) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
@@ -93,7 +93,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   void _setupFirebase() async {
-    await _firebaseMessaging.subscribeToTopic('allusers');
+    await _firebaseMessaging.subscribeToTopic('sanju');
     await _firebaseMessaging.setAutoInitEnabled(true);
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -107,7 +107,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (settings.authorizationStatus == AuthorizationStatus.authorized) {
           
       String? token = await _firebaseMessaging.getToken();
-      if (token != null) _sendTokenToServer(token);
     }
 
     print('Permission granted: ${settings.authorizationStatus}');
@@ -209,18 +208,6 @@ void _injectDownloadInterceptor() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
-  }
-    Future<void> _sendTokenToServer(String token) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://sanju.maplein.com/api/webhooks/trigger/app_d1e8203afd9c431890d2ed6e03847a3c/wh_604c016ca4d44fdf98c5d42d518f1a27'),
-        body: {'token': token},
-      );
-      print('Token sent successfully: ${response.statusCode}');
-    } catch (e) {
-      print('Error sending token: $e');
-      // Implement retry logic here if needed
-    }
   }
 
   @override
