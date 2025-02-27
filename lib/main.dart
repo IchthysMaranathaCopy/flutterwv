@@ -9,7 +9,8 @@ import 'package:open_filex/open_filex.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:webview_flutter_upload/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:file_picker/file_picker.dart';
 
 
 void main() async {
@@ -52,6 +53,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
     _initWebView();
     _setupFirebase();
     _requestPermissions();
+  }
+  void addFileSelectionListener() async {
+    if (Platform.isAndroid) {
+      final androidController = controller.platform as AndroidWebViewController;
+      await androidController.setOnShowFileSelector(_androidFilePicker);
+    }
   }
 
   void _initWebView() {
@@ -178,6 +185,16 @@ void _injectDownloadInterceptor() {
     _showError('Download failed: $e');
   }
 }
+    Future<List<String>> _androidFilePicker(FileSelectorParams params) async {
+    final result = await FilePicker.platform.pickFiles();
+
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      return [file.uri.toString()];
+    }
+    return [];
+  }
+
 
   Future<void> _requestPermissions() async {
     await [
