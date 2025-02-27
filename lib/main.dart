@@ -134,6 +134,7 @@ void _injectDownloadInterceptor() {
       function handleDownloadClick(e) {
         const link = e.target.closest(interceptSelector);
         if (!link) return;
+        if (!link.getAttribute('download')) return;
         
         e.preventDefault();
         e.stopImmediatePropagation();
