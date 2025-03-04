@@ -57,7 +57,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
 
   void _initWebView() {
-    _controller = WebViewController()
+    _controller = WebViewController(
+              onPermissionRequest: (request) {
+              request.grant();
+          },
+    )
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel('DownloadInterceptor', 
       onMessageReceived: (message) {
@@ -74,9 +78,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
             _injectDownloadInterceptor();
           },
           onWebResourceError: (WebResourceError error) {},
-          onPermissionRequest: (request) {
-              request.grant();
-          },
           onNavigationRequest: (NavigationRequest request) {
           if (_pendingDownloadUrl == request.url) {
           _pendingDownloadUrl = null;
