@@ -23,6 +23,7 @@ jobs:
       - name: Install iOS dependencies
         run: |
           cd ios
+          pod init
           pod install
 
       - name: Accept Xcode license
