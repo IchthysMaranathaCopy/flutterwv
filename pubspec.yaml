@@ -15,8 +15,7 @@ dependencies:
   http: ^1.1.0
   path_provider: ^2.1.0
   permission_handler: ^10.4.4
-  open_filex: ^4.3.3
-  file_picker: 5.5.0
+
 
 dev_dependencies:
   flutter_test:
