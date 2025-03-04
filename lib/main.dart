@@ -5,12 +5,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:open_filex/open_filex.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:file_picker/file_picker.dart';
+
 
 
 void main() async {
@@ -59,11 +57,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel('DownloadInterceptor', 
-      onMessageReceived: (message) {
-        final data = jsonDecode(message.message);
-        _handleFileDownload(data['url'], filename: data['filename']);
-      })
       ..setUserAgent("random")
       ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
       ..setNavigationDelegate(
@@ -71,26 +64,17 @@ class _WebViewScreenState extends State<WebViewScreen> {
           onProgress: (int progress) {},
           onPageStarted: (String url) {},
           onPageFinished: (String url) {
-            _injectDownloadInterceptor();
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-          if (_pendingDownloadUrl == request.url) {
-          _pendingDownloadUrl = null;
-          return NavigationDecision.prevent;
-        }
+
           return NavigationDecision.navigate;
         },
         ),
       );
-    addFileSelectionListener();
+
   }
-    void addFileSelectionListener() async {
-    if (Platform.isAndroid) {
-      final androidController = _controller.platform as AndroidWebViewController;
-      await androidController.setOnShowFileSelector(_androidFilePicker);
-    }
-  }
+
 
   void _setupFirebase() async {
     await _firebaseMessaging.subscribeToTopic('allusers');
@@ -135,66 +119,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
       print('Message opened from terminated state:');
       print(message.data);
     });
-  }
-void _injectDownloadInterceptor() {
-  _controller.runJavaScript('''
-    (function() {
-      const interceptSelector = 'a[download]';
-      
-      function handleDownloadClick(e) {
-        const link = e.target.closest(interceptSelector);
-        if (!link) return;
-        if (!link.getAttribute('download')) return;
-        
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        
-        DownloadInterceptor.postMessage(JSON.stringify({
-          url: link.href,
-          filename: link.getAttribute('download')
-        }));
-        return false;
-      }
-
-      document.body.addEventListener('click', handleDownloadClick, true);
-      window.addEventListener('beforeunload', () => {
-        document.body.removeEventListener('click', handleDownloadClick, true);
-      });
-    })();
-  ''');
-}
-
-  Future<void> _handleFileDownload(String url, {String? filename}) async {
-  try {
-    if (_pendingDownloadUrl == url) return;
-    _pendingDownloadUrl = url;
-    
-    filename ??= 'file';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Downloading $filename...')),
-    );
-
-    final response = await http.get(Uri.parse(url));
-    final directory = Directory('/storage/emulated/0/Download');
-    final file = File('${directory?.path}/$filename');
-    
-    await file.writeAsBytes(response.bodyBytes);
-    _pendingDownloadUrl = null;
-    
-    OpenFilex.open(file.path);
-  } catch (e) {
-    _pendingDownloadUrl = null;
-    _showError('Download failed: $e');
-  }
-}
-    Future<List<String>> _androidFilePicker(FileSelectorParams params) async {
-    final result = await FilePicker.platform.pickFiles();
-
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      return [file.uri.toString()];
-    }
-    return [];
   }
 
 
