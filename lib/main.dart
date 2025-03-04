@@ -74,6 +74,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
             _injectDownloadInterceptor();
           },
           onWebResourceError: (WebResourceError error) {},
+          onPermissionRequest: (request) {
+              request.grant();
+          },
           onNavigationRequest: (NavigationRequest request) {
           if (_pendingDownloadUrl == request.url) {
           _pendingDownloadUrl = null;
