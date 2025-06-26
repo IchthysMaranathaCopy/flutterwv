@@ -98,7 +98,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         _handleFileDownload(data['url'], filename: data['filename']);
       })
       ..setUserAgent("random")
-      ..loadRequest(Uri.parse('https://lawffice.maplein.com')) // Replace with your URL
+      ..loadRequest(Uri.parse(_url)) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
