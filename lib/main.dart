@@ -98,7 +98,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         final data = jsonDecode(message.message);
         _handleFileDownload(data['url'], filename: data['filename']);
       })
-      ..setUserAgent("random")
+      ..setUserAgent("Mozilla/5.0 (Linux; Android 10; K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/125.000 Mobile Safari/537.36")
       ..loadRequest(Uri.parse(_url)) // Replace with your URL
       ..setNavigationDelegate(
         NavigationDelegate(
