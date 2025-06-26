@@ -11,6 +11,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() async {
@@ -46,16 +47,48 @@ class _WebViewScreenState extends State<WebViewScreen> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _downloadFilename;
   String? _pendingDownloadUrl;
+  String _url = '';
+  final TextEditingController _urlController = TextEditingController();
+  bool _isFirstRun = true;
 
   @override
   void initState() {
     super.initState();
+    _loadSavedUrl();
     _initWebView();
     _setupFirebase();
     _requestPermissions();
   }
+  Future<void> _loadSavedUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedUrl = prefs.getString('savedUrl');
 
+    if (savedUrl != null && savedUrl.isNotEmpty) {
+      setState(() {
+        _url = savedUrl;
+        _isFirstRun = false;
+      });
+    } else {
+      setState(() {
+        _isFirstRun = true;
+      });
+    }
+  }
+  Future<void> _saveUrl(String url) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('savedUrl', url);
+  }
 
+  void _navigateToUrl() {
+    String url = _urlController.text;
+    if (url.isNotEmpty) {
+      setState(() {
+        _url = url;
+        _isFirstRun = false;
+      });
+      _saveUrl(url);
+    }
+  }
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -243,7 +276,26 @@ return SafeArea(
       },
       child: Scaffold(
       appBar: null,
-      body: Stack(
+      body:  _isFirstRun
+          ? Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: _urlController,
+                    decoration: InputDecoration(
+                      labelText: 'Enter URL',
+                      hintText: 'https://dash.maplein.com',
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _navigateToUrl,
+                  child: Text('Load URL'),
+                ),
+              ],
+            )
+          : Stack(
         children: [WebViewWidget(controller: _controller),
           Positioned(
             top: 20, // Position below AppBar
