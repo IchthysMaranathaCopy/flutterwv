@@ -13,7 +13,7 @@ jobs:
         env:
             ENCODED_STRING: ${{ secrets.KEYSTORE }}
         run: |
-            TMP_KEYSTORE_FILE_PATH="$GITHUB_WORKSPACE"/keystore
+            TMP_KEYSTORE_FILE_PATH=${{$GITHUB_WORKSPACE}}/keystore
             mkdir "${TMP_KEYSTORE_FILE_PATH}"
             echo $ENCODED_STRING | base64 -di > "${TMP_KEYSTORE_FILE_PATH}"/keystore.jks
 
@@ -42,7 +42,7 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          GITHUB_WORKSPACE: $GITHUB_WORKSPACE
+          GITHUB_WORKSPACE: ${{$GITHUB_WORKSPACE}}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
