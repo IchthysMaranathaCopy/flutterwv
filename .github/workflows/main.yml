@@ -19,6 +19,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
 
       - name: Install dependencies
         run: flutter pub get
@@ -28,7 +32,7 @@ jobs:
         run: echo $GOOGLE_SERVICES_JSON | base64 -di > ./android/app/google-services.json
 
       - name: Build APK
-        run: flutter build apk --debug
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
