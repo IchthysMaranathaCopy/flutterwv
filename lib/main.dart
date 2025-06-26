@@ -92,6 +92,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
     }
   }
 
+  void _refresh() {
+    _controller.reload(); // Reload the WebView
+  }
   void _setupFirebase() async {
     await _firebaseMessaging.subscribeToTopic('allusers');
     await _firebaseMessaging.setAutoInitEnabled(true);
@@ -240,7 +243,23 @@ return SafeArea(
       },
       child: Scaffold(
       appBar: null,
-      body: WebViewWidget(controller: _controller),
+      body: Stack(
+        children: [WebViewWidget(controller: _controller),
+          Positioned(
+            top: 20, // Position below AppBar
+            left: 0,
+            right: 0,
+            child: Center(
+              child: FloatingActionButton(
+                mini: true, // Smaller size
+                backgroundColor: Colors.white,
+                onPressed: _refresh,
+                child: const Icon(Icons.refresh, color: Colors.blue),
+              ),
+            ),
+          ),
+        ],
+      ),
         ),
        ),
     );
