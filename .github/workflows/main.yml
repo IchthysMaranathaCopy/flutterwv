@@ -13,8 +13,8 @@ jobs:
         env:
             ENCODED_STRING: ${{ secrets.KEYSTORE }}
         run: |
-            mkdir ${{github.workspace }}+"/keystore"
-            echo $ENCODED_STRING | base64 -di > ${{github.workspace }}+"/keystore/keystore.jks"
+            mkdir ${{github.workspace }}"/keystore"
+            echo $ENCODED_STRING | base64 -di > ${{github.workspace }}"/keystore/keystore.jks"
 
       - uses: actions/checkout@v3
 
