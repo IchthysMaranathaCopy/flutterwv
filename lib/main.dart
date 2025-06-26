@@ -55,7 +55,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void initState() {
     super.initState();
     _loadSavedUrl();
-\\    _initWebView();
+//    _initWebView();
     _setupFirebase();
     _requestPermissions();
   }
