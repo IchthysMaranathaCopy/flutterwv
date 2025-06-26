@@ -13,7 +13,8 @@ jobs:
       - uses: subosito/flutter-action@v2.21.0
         with:
           flutter-version: '3.27.4'
-
+      - name: Clean Gradle cache
+        run: rm -rf ~/.gradle/caches
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
