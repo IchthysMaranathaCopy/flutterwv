@@ -94,7 +94,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
   void _initWebView() {
     
-    WebViewCookieManager().setCookie(WebViewCookie(name: "fbtkn", value: _tkn, domain: Uri.parse(_url).host););
+    WebViewCookieManager().setCookie(WebViewCookie(name: "fbtkn", value: _tkn, domain: Uri.parse(_url).host));
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel('DownloadInterceptor', 
