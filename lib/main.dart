@@ -47,6 +47,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _downloadFilename;
   String? _pendingDownloadUrl;
+  String? _tkn;
   String _url = '';
   final TextEditingController _urlController = TextEditingController();
   bool _isFirstRun = true;
@@ -67,6 +68,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       setState(() {
         _url = savedUrl;
         _isFirstRun = false;
+        _initWebView();
       });
     } else {
       setState(() {
@@ -91,6 +93,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
     }
   }
   void _initWebView() {
+    
+    WebViewCookieManager().setCookie(WebViewCookie(name: "fbtkn", value: _tkn, domain: Uri.parse(_url).host););
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel('DownloadInterceptor', 
@@ -144,6 +148,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (settings.authorizationStatus == AuthorizationStatus.authorized) {
           
       String? token = await _firebaseMessaging.getToken();
+      if (token != null) _tkn=token;
       if (token != null) _sendTokenToServer(token);
     }
 
@@ -250,7 +255,7 @@ void _injectDownloadInterceptor() {
     Future<void> _sendTokenToServer(String token) async {
     try {
       final response = await http.post(
-        Uri.parse('https://sanju.maplein.com/api/webhooks/trigger/app_d1e8203afd9c431890d2ed6e03847a3c/wh_604c016ca4d44fdf98c5d42d518f1a27'),
+        Uri.parse('https://lawffice.maplein.com/api/webhooks/trigger/app_8c99016aba3c4786aedcb835ca9ed136/wh_604c016ca4d44fdf98c5d42d518f1a27'),
         body: {'token': token},
       );
       print('Token sent successfully: ${response.statusCode}');
