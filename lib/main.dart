@@ -47,7 +47,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _downloadFilename;
   String? _pendingDownloadUrl;
-  String? _tkn;
+  String _tkn='notkn';
   String _url = '';
   final TextEditingController _urlController = TextEditingController();
   bool _isFirstRun = true;
