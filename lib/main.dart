@@ -63,7 +63,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
   Future<void> _loadSavedUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? savedUrl = prefs.getString('savedUrl');
-
+    String? savedtkn = prefs.getString('savedtkn');
+    if(savedtkn != null && savedtkn.isNotEmpty) _tkn = savedtkn;
     if (savedUrl != null && savedUrl.isNotEmpty) {
       setState(() {
         _url = savedUrl;
@@ -145,11 +146,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
       provisional: false,
       sound: true,
     );
-        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedtkn = prefs.getString('savedtkn');
+        if (settings.authorizationStatus == AuthorizationStatus.authorized && !(savedtkn != null && savedtkn.isNotEmpty)) {
           
       String? token = await _firebaseMessaging.getToken();
-      if (token != null) _tkn=token;
-      if (token != null) _sendTokenToServer(token);
+      if (token != null) 
+      { setState(() _tkn=token);
+      _sendTokenToServer(token);
+       await prefs.setString('savedtkn', token);       
+      }
     }
 
     print('Permission granted: ${settings.authorizationStatus}');
@@ -304,8 +310,7 @@ return SafeArea(
           : Stack(
         children: [WebViewWidget(controller: _controller),
           Positioned(
-            top: 20, // Position below AppBar
-            left: 0,
+            top: 0, // Position below AppBar
             right: 0,
             child: Center(
               child: FloatingActionButton(
