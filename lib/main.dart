@@ -152,7 +152,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
           
       String? token = await _firebaseMessaging.getToken();
       if (token != null) 
-      { setState(() _tkn=token);
+      { setState(() {_tkn=token;});
       _sendTokenToServer(token);
        await prefs.setString('savedtkn', token);       
       }
